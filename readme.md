@@ -8,7 +8,7 @@ developing purposes when you want to reduce database size and preserve its struc
 db-truncate requires PHP >= 5.3
 
 ```
-composer require idealogica/db-truncate:~1.0.0
+composer global require idealogica/db-truncate:~1.0.0
 ```
 
 ### Usage
