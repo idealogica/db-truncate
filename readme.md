@@ -13,7 +13,9 @@ composer require idealogica/db-truncate:~1.0.0
 
 ### Usage
 
+```
 db-truncate [-u username (root)] [-p password] [-h host (localhost)] [-P port] [-S unix socket] [-e comma-separated tables to exclude (changelog)] database [records to keep (500)]
+```
 
 ### License
 
