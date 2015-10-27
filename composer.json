@@ -1,0 +1,20 @@
+{
+    "name": "idealogica/db-truncate",
+    "description": "Truncates mysql database tables to specified number of rows.",
+    "keywords": ["mysql", "table", "truncate", "trim"],
+    "homepage": "https://github.com/idealogica/db-truncate",
+    "license": "MIT",
+    "authors": 
+    [
+        {
+            "name": "Konstatin Nikiforov",
+            "email": "ok@idealogica.ru",
+            "homepage": "http://www.idealogica.ru"
+        }
+    ],
+    "require": 
+    {
+        "php": ">=5.3",
+    },    
+    "bin": ["db-truncate"]
+}

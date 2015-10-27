@@ -1,0 +1,133 @@
+#!/usr/bin/env php
+<?php
+$dbName = '';
+$rowsToKeep = 500;
+$user = 'root';
+$password = '';
+$host = 'localhost';
+$port = 0;
+$socket = '';
+$exclude = 'changelog';
+$warning = false;
+$throwMessage = function ($msg = '', $error = false)
+{
+    if($msg)
+    {
+        echo($msg."\n");
+    }
+    echo("Usage:\n");
+    echo(
+        "db-truncate [-u username (root)] [-p password] [-h host (localhost)] [-P port] ".
+        "[-S unix socket] [-e comma-separated tables to exclude (changelog)] database ".
+        "[records to keep (500)]\n");
+    exit((int)$error);
+};
+$getArgValue = function ($idx) use (&$argv)
+{
+    $value = null;
+    if(!empty($argv[$idx + 1]))
+    {
+        $value = $argv[$idx + 1];
+        unset($argv[$idx + 1]);        
+    }
+    unset($argv[$idx]);
+    return $value;
+};
+unset($argv[0]);
+if(isset($argv[1]) && ($argv[1] === '--help' || $argv[1] === '-h'))
+{
+    $throwMessage();
+}
+foreach($argv as $idx => $arg)
+{
+    switch($arg)
+    {
+        case '-u':
+            $user = $getArgValue($idx);
+            break;
+        case '-p':
+            $password = $getArgValue($idx);
+            break;
+        case '-h':
+            $host = $getArgValue($idx);
+            break;
+        case '-P':
+            $port = $getArgValue($idx);
+            break;
+        case '-S':
+            $socket = $getArgValue($idx);
+            break;
+        case '-e':
+            $exclude = $getArgValue($idx);
+            break;
+        default:
+            if(!$dbName)
+            {
+                $dbName = array_shift($argv);
+            }
+            else
+            {
+                $rowsToKeep = array_shift($argv);
+            }
+    }
+}
+if(!$dbName)
+{
+    $throwMessage("No database name was specified.", true);
+}
+$exclude = explode(',', $exclude);
+try 
+{
+    $db = new PDO(
+        'mysql:host='.$host.';port='.$port.';socket='.$socket.';dbname='.$dbName, 
+        $user, 
+        $password);
+    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    // get tables list
+    $stmt = $db->prepare(
+        "SELECT table_name ".
+        "FROM information_schema.tables ".
+        "WHERE table_schema = ? AND table_type = 'BASE TABLE'");
+    $stmt->execute(array($dbName));
+    foreach($stmt->fetchAll() as $table)
+    {
+        $tableName = $table['table_name'];
+        if(!in_array($tableName, $exclude))
+        {
+            $affected = 0;
+            $stmt = $db->prepare("SELECT COUNT(*) FROM `".$tableName."`");
+            $stmt->execute();
+            $count = $stmt->fetchColumn();
+            if($count > $rowsToKeep)
+            {
+                // find primary key
+                $stmt = $db->prepare(
+                    "SELECT column_name ".
+                    "FROM information_schema.columns ".
+                    "WHERE table_schema=? AND table_name=? AND column_key='PRI'");
+                $stmt->execute(array($dbName, $tableName));
+                $pk = $stmt->fetchColumn();
+                if(!$pk)
+                {
+                    $warning = true;
+                    echo("* no primary key for table ".$tableName.", skipping\n");
+                    continue;
+                }  
+                // delete records
+                $affected = $db->exec(
+                    "DELETE FROM `".$tableName."` ".
+                    "ORDER BY `".$pk."` ".
+                    "DESC LIMIT ".(int)($count - $rowsToKeep));
+            }
+            echo("* table: ".$tableName."; records affected: ".$affected."\n");
+        }
+    }
+} 
+catch(PDOException $e) 
+{
+   $throwMessage($e->getMessage(), true);
+}
+echo($warning ? 
+    "Some of tables with primary key missing were skipped.\n" : 
+    "All tables were truncated successfully.\n");
+exit(0);
