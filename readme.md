@@ -1,6 +1,6 @@
 # db-truncate
 
-db-truncate truncates mysql database tables to specified number of rows. It's useful for 
+db-truncate truncates MySql database tables to specified number of rows. It's useful for 
 developing purposes when you want to reduce database size and preserve its structure.
 
 ### Installation

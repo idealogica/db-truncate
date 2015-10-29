@@ -1,6 +1,6 @@
 {
     "name": "idealogica/db-truncate",
-    "description": "Truncates mysql database tables to specified number of rows.",
+    "description": "Truncates MySql database tables to specified number of rows.",
     "keywords": ["mysql", "table", "truncate", "trim"],
     "homepage": "https://github.com/idealogica/db-truncate",
     "license": "MIT",
