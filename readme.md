@@ -19,4 +19,4 @@ db-truncate [-u username (root)] [-p password] [-h host (localhost)] [-P port] [
 
 ### License
 
-Lavanda is licensed under a [MIT License](https://opensource.org/licenses/MIT).
+db-truncate is licensed under a [MIT License](https://opensource.org/licenses/MIT).
