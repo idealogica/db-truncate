@@ -9,6 +9,7 @@ $port = 0;
 $socket = '';
 $exclude = 'changelog';
 $warning = false;
+$argSkip = false;
 $throwMessage = function ($msg = '', $error = false)
 {
     if($msg)
@@ -22,15 +23,14 @@ $throwMessage = function ($msg = '', $error = false)
         "[records to keep (500)]\n");
     exit((int)$error);
 };
-$getArgValue = function ($idx) use (&$argv)
+$getArgValue = function ($idx) use ($argv, &$argSkip)
 {
     $value = null;
-    if(!empty($argv[$idx + 1]))
+    $argSkip = true;
+    if(isset($argv[$idx + 1]))
     {
         $value = $argv[$idx + 1];
-        unset($argv[$idx + 1]);        
     }
-    unset($argv[$idx]);
     return $value;
 };
 unset($argv[0]);
@@ -61,14 +61,18 @@ foreach($argv as $idx => $arg)
             $exclude = $getArgValue($idx);
             break;
         default:
-            if(!$dbName)
+            if(!$argSkip)
             {
-                $dbName = array_shift($argv);
+                if(!$dbName)
+                {
+                    $dbName = $argv[$idx];
+                }
+                else
+                {
+                    $rowsToKeep = $argv[$idx];
+                }
             }
-            else
-            {
-                $rowsToKeep = array_shift($argv);
-            }
+            $argSkip = false;
     }
 }
 if(!$dbName)
